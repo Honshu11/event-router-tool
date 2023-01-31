@@ -76,6 +76,37 @@ function worldToScreenY(y) {
     return y - camera.y;
 }
 
+function calculateForces(module, otherModules) {
+    //loop over otherModules
+        //calculate repulsive force
+        //add to modules force total
+
+
+    // loop over moduleSubscriberList
+        //calculate attractive force
+        //add to modules force total
+    
+    //calculate zone attractive force using verticalness.
+    //add to modules force total
+}
+
+function distance(moduleA, moduleB) {
+
+}
+
+function angleBetween(moduleA, moduleB) {
+    //atan2();
+}
+
+
+function applyForces(module) {
+  
+    //updateVelocity();
+    //applyMaxVelocity();
+    //updatePosition();
+}
+
+
 function updateSpacing(moduleB, moduleA) {
     // var distance = Math.abs(moduleA.x - moduleB.x); //distance between two points (1 dimension)
     var horizontalDistance = moduleA.x - moduleB.x;
@@ -109,7 +140,6 @@ function updateSpacing(moduleB, moduleA) {
     }
 
     //applies acceleration to velocity
-
     moduleA.v.x -= a.x;
     moduleA.v.y -= a.y;
     moduleB.v.x += a.x;
@@ -148,10 +178,6 @@ function tick() {
     //if(Math.random() < 0.01) {
          //console.log(system);
     //}
-
-
-    //c.fillRect(worldToScreen(100, 100).x, worldToScreen(100,100).y, 50, 50);
-    //c.fillRect(worldToScreen(200, 200).x, worldToScreen(200,200).y, 150, 150);
     drawAllModules();
     callForEachSubscription(updateSpacing);
 
@@ -160,7 +186,7 @@ function tick() {
 }
 
 //TODO: color coordinate the arrows to match accordingly to the spacing.
-//TODO: Look into the physics of the modules
+//TODO: Look into the physics of the modules.
 //TODO: debug grid, put on flag.
 
 
@@ -183,6 +209,7 @@ function drawSubscriberArrow(moduleA, moduleB) {
     var moduleAScreenY = worldToScreenY(moduleA.y);
     var moduleBScreenX = worldToScreenX(moduleB.x);
     var moduleBScreenY = worldToScreenY(moduleB.y);
+
     //error handling
     if(moduleA === undefined) {
         throw new Error('Module A is undefined. (probably publisher is not in the module list.)');
@@ -229,7 +256,6 @@ function callForEachSubscription(callback) {
             var publisher = system.modules[event.publisher];
 
             //error handling below:
-
             if(subscriber === undefined) {
                 throw new Error(`subscriber ${subscriberName} is not in module list.`);
             }
