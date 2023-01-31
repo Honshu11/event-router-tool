@@ -1,0 +1,23 @@
+modules:
+  temperatureSensor:
+    devices:
+      - termoCouple
+    publishedEvents:
+      - tankTemperature
+  fanControl:
+    devices:
+      - fan
+  resetButton:
+    publishedEvents:
+      - resetButton
+  alarmSystem: {}
+events:
+  tankTemperature:
+    publisher: temperatureSensor
+    subscribers:
+      - fanControl
+  resetButton:
+    publisher: resetButton
+    subscribers:
+      - alarmSystem
+      - fanControl
