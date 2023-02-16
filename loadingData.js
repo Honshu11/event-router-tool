@@ -23,19 +23,21 @@ async function loadData() {
             }
             //console.log(moduleName, module, zoneName, zone);
             module.name = moduleName;
-            //module.x = Math.random() * width;
-            //module.y = Math.random() * height;
-            module.x = system.zoneLocations[zoneName].x;
-            module.y = system.zoneLocations[zoneName].y;
+
+            module.x = system.zoneLocations[zoneName].x + Math.random();
+            module.y = system.zoneLocations[zoneName].y + Math.random();
             module.v = {
                 x: 0.0,
                 y: 0.0,
             };
+            module.netForce = {
+                x: 0.0,
+                y: 0.0,
+            };
+
             system.modules[moduleName] = module; //"flattening a tree" 
         })
-        
     })
-       
     requestAnimationFrame(tick);   
 }
 

@@ -8,7 +8,7 @@
     },
     "eventSystem": {
       "x": 2400,
-      "y": 1200, 
+      "y": 1200,
       "width": 1000,
       "height": 1000
     },
@@ -47,34 +47,6 @@
     "eventSystem": {
       "eventHandler": {}
     },
-    "networkingIn": {
-      "networkIn": {},
-      "ethernetParser": {},
-      "tcpIpParser": {},
-      "httpParser": {}
-    },
-    "networkingOut": {
-      "httpGenerator": {},
-      "tcpIpGenerator": {},
-      "ethernetGenerator": {},
-      "networkOut": {}
-    },
-    "webParsers": {
-      "htmlParser": {},
-      "cssParser": {},
-      "javascriptParser": {}
-    },
-    "engines": {
-      "javascriptEngine": {},
-      "domEngine": {},
-      "styleEngine": {},
-      "layoutEngine": {}
-    },
-    "renderers": {
-      "textRenderer": {},
-      "imageRenderer": {},
-      "videoRenderer": {}
-    },
     "inputDevices": {
       "mouse": {},
       "keyboard": {}
@@ -91,139 +63,6 @@
       "publisher": "keyboard",
       "subscribers": [
         "eventHandler"
-      ]
-    },
-    "keyUp": {
-      "publisher": "keyboard",
-      "subscribers": [
-        "eventHandler"
-      ]
-    },
-    "callEventHandler": {
-      "publisher": "eventHandler",
-      "subscribers": [
-        "domEngine",
-        "javascriptEngine"
-      ]
-    },
-    "receiveEthernetFrame": {
-      "publisher": "networkIn",
-      "subscribers": [
-        "ethernetParser"
-      ]
-    },
-    "receiveTcpIpPacket": {
-      "publisher": "ethernetParser",
-      "subscribers": [
-        "tcpIpParser"
-      ]
-    },
-    "receiveHttpResponse": {
-      "publisher": "tcpIpParser",
-      "subscribers": [
-        "httpParser"
-      ]
-    },
-    "receiveHtmlFile": {
-      "publisher": "httpParser",
-      "subscribers": [
-        "htmlParser"
-      ]
-    },
-    "receiveCssFile": {
-      "publisher": "httpParser",
-      "subscribers": [
-        "cssParser"
-      ]
-    },
-    "receiveJavascriptFile": {
-      "publisher": "httpParser",
-      "subscribers": [
-        "javascriptEngine"
-      ]
-    },
-    "transmitHttpRequest": {
-      "publisher": "javascriptEngine",
-      "subscribers": [
-        "httpGenerator"
-      ]
-    },
-    "transmitTcpIpPacket": {
-      "publisher": "httpGenerator",
-      "subscribers": [
-        "tcpIpGenerator"
-      ]
-    },
-    "transmitEthernetFrame": {
-      "publisher": "tcpIpGenerator",
-      "subscribers": [
-        "ethernetGenerator"
-      ]
-    },
-    "runJavascriptFile": {
-      "publisher": "javascriptParser",
-      "subscribers": [
-        "javascriptEngine"
-      ]
-    },
-    "runHtmlFile": {
-      "publisher": "htmlParser",
-      "subscribers": [
-        "domEngine"
-      ]
-    },
-    "runCssFile": {
-      "publisher": "cssParser",
-      "subscribers": [
-        "styleEngine"
-      ]
-    },
-    "domQuery": {
-      "publisher": "javascriptEngine",
-      "subscribers": [
-        "domEngine"
-      ]
-    },
-    "domUpdate": {
-      "publisher": "javascriptEngine",
-      "subscribers": [
-        "domEngine"
-      ]
-    },
-    "updateStyle": {
-      "publisher": "javascriptEngine",
-      "subscribers": [
-        "styleEngine"
-      ]
-    },
-    "updateVisibleStyle": {
-      "publisher": "styleEngine",
-      "subscribers": [
-        "layoutEngine"
-      ]
-    },
-    "updateVisibleDom": {
-      "publisher": "domEngine",
-      "subscribers": [
-        "layoutEngine"
-      ]
-    },
-    "drawText": {
-      "publisher": "layoutEngine",
-      "subscribers": [
-        "textRenderer"
-      ]
-    },
-    "drawImage": {
-      "publisher": "layoutEngine",
-      "subscribers": [
-        "imageRenderer"
-      ]
-    },
-    "drawVideo": {
-      "publisher": "layoutEngine",
-      "subscribers": [
-        "videoRenderer"
       ]
     }
   }

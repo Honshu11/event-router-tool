@@ -1,3 +1,4 @@
+
 document.addEventListener('click', function(event) {
     console.log(camera);
     console.log('x: ' + worldToScreenX(event.x));
@@ -13,97 +14,122 @@ document.addEventListener('mousemove', function(event) {
     }
 })
 
-var canvas = document.querySelector('canvas');
-var c = canvas.getContext('2d');
-
-var width;
-var height;
-var moduleCard = {
-    width: 200,
-    height: 300,
-    headerHeight: 50,
+function requestAnimationFrameSlowMoDebug() {
+    if(!slowMo){
+        requestAnimationFrame(tick);
+    } else {
+        setTimeout(tick, 100);
+    }
 }
-var spacing = 200;
-var bounce = .01;
-
-var maxSpeed = 5;
-var minAcceleration = 0.3;
-var moduleMass = 1.0;
-var forceConstant = 1000;
-
-var camera = {
-    x: 0,
-    y: 0,
-}
-
-function resize() {
-    canvas.width = window.innerWidth;
-    canvas.height = window.innerHeight;
-    width = canvas.width;
-    height = canvas.height;
-
-}
-
-window.addEventListener('resize', resize);
-resize();
-
-// var testData =  {
-//     events: [
-//         {
-//             name: 'tankTemperature',
-//             time: 5.0,
-//             value: '23C',
-//         },
-//         {
-//             name: 'tankTemperature',
-//             time: 8.0,
-//             value: '25C',
-//         },
-//         {
-//             name: 'tankTemperature',
-//             time: 10.0,
-//             value: '28C',
-//         },
-//     ]
-// }
 
 function worldToScreenX(x) {
     return x - camera.x;
 }
 
-
 function worldToScreenY(y) {
     return y - camera.y;
 }
 
-function calculateForces(module, otherModules) {
-    //loop over otherModules
-        //calculate repulsive force
-        //add to modules force total
+function calculateModuleForce(module, otherModules) {
+    module.netForce.x = 0;
+    module.netForce.y = 0;
+    otherModules.forEach(function otherModulesLoop(otherModule) {
+        var distanceBetweenModules = distance(module, otherModule);
+         //referencing to local function scope.
+        if(distanceBetweenModules === 0) {
+            throw new Error('distance between modules is 0.');
+        }
 
+        if(!Number.isFinite(distanceBetweenModules)) {
+            throw new Error('distance between modules is infinity, NaN, or the wrong type.' + distanceBetweenModules);
+        }
 
-    // loop over moduleSubscriberList
-        //calculate attractive force
+        var force = repulsiveStrength / (distanceBetweenModules ** 2);
+
+        if(!Number.isFinite(force)) {
+            throw new Error('force is infinity, NaN, or the wrong type.' + force);
+        }
+
+        //console.log(`${module.name} ${otherModule.name} ${force} force == distanceBetween ${distanceBetweenModules}`);
+        
+        var angleBetweenModules = angleBetween(module, otherModule);
         //add to modules force total
+        module.netForce.x += force * Math.cos(angleBetweenModules);
+        //console.log(module.netForce.x);
+        module.netForce.y += force * Math.sin(angleBetweenModules);
+        //console.log(module.netForce.y);
+    })
+
+    callForEachSubscription(function calcAttractiveForce(otherModule) {
+        var distanceBetweenModules = distance(module, otherModule); 
+
+        if(distanceBetweenModules === 0) {
+            throw new Error(`distanceBetweenModules is 0. ${module.name} ${otherModule.name}`);
+        }
     
-    //calculate zone attractive force using verticalness.
-    //add to modules force total
+        if(!Number.isFinite(distanceBetweenModules)) {
+            throw new Error(`distanceBetweenModules is infinity, NaN, or the wrong data type ${distanceBetweenModules}`);
+        }
+    
+        var force = attractiveStrength / (distanceBetweenModules ** 2);
+    
+        if(!Number.isFinite(force)) {
+            throw new Error(`force is infinity, NaN, or the wrong data type ${force}`);
+        }
+
+        var angleBetweenModules = angleBetween(module, otherModule);
+        //add to modules force total
+        module.netForce.x += force * Math.cos(angleBetweenModules);
+        module.netForce.y += force * Math.sin(angleBetweenModules);
+    }, module);
+
+    //console.log(module.netForce);
+    
+    //TODO: calculate zone attractive force using verticalness.
+        // add to modules force total
 }
 
 function distance(moduleA, moduleB) {
-
+    var horizontalDistance = moduleA.x - moduleB.x;
+    var verticalDistance = moduleA.y - moduleB.y;
+    return Math.sqrt(horizontalDistance * horizontalDistance + verticalDistance * verticalDistance);
 }
 
 function angleBetween(moduleA, moduleB) {
-    //atan2();
+    var horizontalDistance = moduleA.x - moduleB.x;
+    var verticalDistance = moduleA.y - moduleB.y;
+    return Math.atan2(verticalDistance, horizontalDistance);
 }
 
+function updateVelocity(module) {
+    module.v.x += module.netForce.x;
+    module.v.y += module.netForce.y;
+}
 
-function applyForces(module) {
-  
-    //updateVelocity();
-    //applyMaxVelocity();
-    //updatePosition();
+function applyMaxVelocity(moduleA) {
+    var speed = Math.sqrt(moduleA.v.x * moduleA.v.x + moduleA.v.y * moduleA.v.y);
+    var angle = Math.atan2(moduleA.v.y, moduleA.v.x);
+
+    if(speed > maxSpeed) {
+        moduleA.v.x = maxSpeed * Math.cos(angle);
+        moduleA.v.y = maxSpeed * Math.sin(angle);
+    }
+
+    // if(speed < -maxSpeed) {
+    //     moduleA.v.x =  -maxSpeed * Math.cos(angle);
+    //     moduleA.v.y =  -maxSpeed * Math.sin(angle);
+    // }
+}
+
+function updatePosition(module) {
+    module.x += module.v.x;
+    module.y += module.v.y;   
+}
+
+function applyModuleForce(module) {
+    updateVelocity(module);
+    applyMaxVelocity(module);
+    updatePosition(module);
 }
 
 
@@ -172,20 +198,31 @@ function updateSpacing(moduleB, moduleA) {
     // moduleB.y += moduleB.v.y;
 }
 
+function calculateForces() {
+    Object.values(system.modules).forEach(function(module) {
+        var otherModules = Object.values(system.modules).filter(function(otherModule) {
+            return module != otherModule;    
+        })
+        calculateModuleForce(module, otherModules);
+    })
+}
+
+function applyForces() {
+    Object.values(system.modules).forEach(function(module){
+        applyModuleForce(module);
+    })
+}
+
 function tick() {
     c.clearRect(0, 0, width, height);
 
-    //if(Math.random() < 0.01) {
-         //console.log(system);
-    //}
+    calculateForces();
+    applyForces();
     drawAllModules();
-    callForEachSubscription(updateSpacing);
 
-    
-    requestAnimationFrame(tick);
+    requestAnimationFrameSlowMoDebug();
 }
 
-//TODO: color coordinate the arrows to match accordingly to the spacing.
 //TODO: Look into the physics of the modules.
 //TODO: debug grid, put on flag.
 
@@ -196,7 +233,7 @@ function drawModule(module, x, y) {
     
     c.strokeStyle = '#000';
     c.fillStyle = '#bbb4';
-    c.font = '20px ariel';
+    c.font = `${moduleCard.headerFontSize}px Ariel`;
     c.fillRect(screenX, screenY, moduleCard.width, moduleCard.height);
     c.strokeRect(screenX, screenY, moduleCard.width, moduleCard.height);
     c.strokeRect(screenX, screenY, moduleCard.width, moduleCard.headerHeight);
@@ -229,7 +266,7 @@ function drawSubscriberArrow(moduleA, moduleB) {
 
     c.beginPath();
     c.moveTo(moduleBScreenX, moduleBScreenY + 100);
-    c.lineTo(moduleBScreenX -arrowSize, moduleBScreenY + 100 + arrowSize);
+    c.lineTo(moduleBScreenX - arrowSize, moduleBScreenY + 100 + arrowSize);
     c.stroke();    
 }
 
@@ -241,8 +278,9 @@ function drawAllModules() {
     callForEachSubscription(drawSubscriberArrow);
 }
 
-function callForEachSubscription(callback) { 
-    Object.keys(system.events).forEach(function(eventName) {
+function callForEachSubscription(callback, module) { 
+    // system events is being referenced in loadingData.js on line 14-16;
+    Object.keys(system.events).forEach(function eventLoop(eventName) {
         var event = system.events[eventName];
         
         //* this code makes subscribers optional. Not sure if it should be optional.
@@ -250,10 +288,15 @@ function callForEachSubscription(callback) {
             return;
         }
 
-        event.subscribers.forEach(function(subscriberName) {
+        event.subscribers.forEach(function subscriberLoop(subscriberName) {
             //console.log(system);
             var subscriber = system.modules[subscriberName];
             var publisher = system.modules[event.publisher];
+
+            //way to create an optional param.
+            if(module !== null && publisher == module) {
+                return;
+            }
 
             //error handling below:
             if(subscriber === undefined) {
@@ -262,6 +305,10 @@ function callForEachSubscription(callback) {
 
             if(publisher === undefined) {
                 throw new Error(`publisher ${event.publisher} is not in module list.`);
+            }
+
+            if(publisher.name == subscriber.name) {
+                throw new Error(`subscribed to own event ${publisher} >> ${subscriber}`);
             }
             
             callback(publisher, subscriber);   
