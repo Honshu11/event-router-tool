@@ -1,13 +1,11 @@
 var system;
 
 var debug = false;
-var slowMo = true;
+var slowMo = false;
 
 
 var canvas = document.querySelector('canvas');
 var c = canvas.getContext('2d');
-
-
 
 var width;
 var height;
