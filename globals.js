@@ -1,7 +1,9 @@
 var system;
 
-var debug = false;
-var slowMo = false;
+//var debug = false;
+var debug = true;
+var slowMo = true;
+var pause = false;
 
 
 var canvas = document.querySelector('canvas');
@@ -28,6 +30,6 @@ var camera = {
     y: 0,
 }
 
-var repulsiveStrength = 0;
-var attractiveStrength = 100;
+var repulsiveStrength = 1e11;
+var attractiveStrength = 1e9;
 var zoneCenteringStrength = 100;

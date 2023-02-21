@@ -18,7 +18,7 @@ function requestAnimationFrameSlowMoDebug() {
     if(!slowMo){
         requestAnimationFrame(tick);
     } else {
-        setTimeout(tick, 100);
+        setTimeout(tick, 40);
     }
 }
 
@@ -35,19 +35,20 @@ function calculateModuleForce(module, otherModules) {
     module.netForce.y = 0;
     otherModules.forEach(function otherModulesLoop(otherModule) {
         var distanceBetweenModules = distance(module, otherModule);
-         //referencing to local function scope.
+
         if(distanceBetweenModules === 0) {
             throw new Error('distance between modules is 0.');
         }
 
         if(!Number.isFinite(distanceBetweenModules)) {
-            throw new Error('distance between modules is infinity, NaN, or the wrong type.' + distanceBetweenModules);
+            throw new Error(`distanceBetweenModules is infinity, NaN, or the wrong data type. ${distanceBetweenModules}`);
         }
 
         var force = repulsiveStrength / (distanceBetweenModules ** 2);
+        
 
         if(!Number.isFinite(force)) {
-            throw new Error('force is infinity, NaN, or the wrong type.' + force);
+            throw new Error(`force is infinity, NaN, or the wrong data type. ${force}`);
         }
 
         //console.log(`${module.name} ${otherModule.name} ${force} force == distanceBetween ${distanceBetweenModules}`);
@@ -60,7 +61,16 @@ function calculateModuleForce(module, otherModules) {
         //console.log(module.netForce.y);
     })
 
-    callForEachSubscription(function calcAttractiveForce(otherModule) {
+    callForEachSubscription(function calcAttractiveForce(publisher, otherModule) {
+        if(publisher !== module){
+            return;
+        }
+
+        if(publisher.x > otherModule.x - 1.2 * moduleCard.width){
+            publisher.netForce.y += Math.random() * 10;
+            return;
+        }
+
         var distanceBetweenModules = distance(module, otherModule); 
 
         if(distanceBetweenModules === 0) {
@@ -71,20 +81,20 @@ function calculateModuleForce(module, otherModules) {
             throw new Error(`distanceBetweenModules is infinity, NaN, or the wrong data type ${distanceBetweenModules}`);
         }
     
-        var force = attractiveStrength / (distanceBetweenModules ** 2);
+        var force = attractiveStrength / (distanceBetweenModules ** 1);
+        //console.log(`force on ${module.name} is ${force}`);
     
         if(!Number.isFinite(force)) {
             throw new Error(`force is infinity, NaN, or the wrong data type ${force}`);
         }
 
-        var angleBetweenModules = angleBetween(module, otherModule);
+        var angleBetweenModules = angleBetween(otherModule, module);
         //add to modules force total
         module.netForce.x += force * Math.cos(angleBetweenModules);
         module.netForce.y += force * Math.sin(angleBetweenModules);
     }, module);
 
     //console.log(module.netForce);
-    
     //TODO: calculate zone attractive force using verticalness.
         // add to modules force total
 }
@@ -130,6 +140,25 @@ function applyModuleForce(module) {
     updateVelocity(module);
     applyMaxVelocity(module);
     updatePosition(module);
+    applyCanvasBoundary(module);
+}
+
+function applyCanvasBoundary(module) {
+    if(module.x <= 0){
+        module.x = 0;    
+    }
+
+    if(module.y <= 0){
+        module.y = 0;
+    }
+
+    if(module.x >= width){
+        module.x = width;
+    }
+
+    if(module.y >= height){
+        module.y = height;
+    }
 }
 
 
@@ -184,14 +213,6 @@ function updateSpacing(moduleB, moduleA) {
         moduleA.v.y =  -maxSpeed * Math.sin(angle);
     }
 
-    // if(moduleB.v.x > maxSpeed) {
-    //     moduleB.v.x = maxSpeed;
-    // }
-
-    // if(moduleB.v.x < -maxSpeed) {
-    //     moduleB.v.x = -maxSpeed;
-    // }
-
     moduleA.x += moduleA.v.x;
     moduleA.y += moduleA.v.y;
     // moduleB.x += moduleB.v.x;
@@ -216,16 +237,15 @@ function applyForces() {
 function tick() {
     c.clearRect(0, 0, width, height);
 
-    calculateForces();
-    applyForces();
+    if(!pause){
+        calculateForces();
+        applyForces();
+    }
+    
     drawAllModules();
 
     requestAnimationFrameSlowMoDebug();
 }
-
-//TODO: Look into the physics of the modules.
-//TODO: debug grid, put on flag.
-
 
 function drawModule(module, x, y) {
     var screenX = worldToScreenX(x);
@@ -239,6 +259,22 @@ function drawModule(module, x, y) {
     c.strokeRect(screenX, screenY, moduleCard.width, moduleCard.headerHeight);
     c.fillStyle = '#000';
     c.fillText(module.name, screenX + 20, screenY + 20);
+
+    if(debug){
+        //console.log(debug + ' debug');
+        c.lineWidth = 3.5;
+        c.strokeStyle = '#F00';
+        c.beginPath()
+        c.moveTo(screenX, screenY - 1);
+        c.lineTo(screenX + 100 * module.v.x, screenY + 100 * module.v.y - 1);
+        c.stroke();
+        
+        // c.strokeStyle = '#0F0';
+        // c.beginPath()
+        // c.moveTo(module.x, module.y - 20);
+        // c.lineTo(module.x + 100 * module.netForce.x, module.y + 100 * module.netForce.y - 20);
+        // c.stroke();
+    }
 }
 
 function drawSubscriberArrow(moduleA, moduleB) {
@@ -258,6 +294,7 @@ function drawSubscriberArrow(moduleA, moduleB) {
 
     var arrowSize = 15;
     
+    c.strokeStyle = '#000';
     c.beginPath();
     c.moveTo(moduleAScreenX + moduleCard.width, moduleAScreenY + 100);
     c.lineTo(moduleBScreenX, moduleBScreenY + 100);
@@ -279,7 +316,7 @@ function drawAllModules() {
 }
 
 function callForEachSubscription(callback, module) { 
-    // system events is being referenced in loadingData.js on line 14-16;
+    // system events is being referenced from globals.js.
     Object.keys(system.events).forEach(function eventLoop(eventName) {
         var event = system.events[eventName];
         
@@ -293,10 +330,12 @@ function callForEachSubscription(callback, module) {
             var subscriber = system.modules[subscriberName];
             var publisher = system.modules[event.publisher];
 
+            console.log(`publisher - ${publisher.name}. subscriber -${subscriber.name}`);
+
             //way to create an optional param.
-            if(module !== null && publisher == module) {
-                return;
-            }
+            // if(module !== null && publisher == module) {
+            //     return;
+            // }
 
             //error handling below:
             if(subscriber === undefined) {

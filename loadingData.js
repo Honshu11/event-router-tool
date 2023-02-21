@@ -23,7 +23,6 @@ async function loadData() {
             }
             //console.log(moduleName, module, zoneName, zone);
             module.name = moduleName;
-
             module.x = system.zoneLocations[zoneName].x + Math.random();
             module.y = system.zoneLocations[zoneName].y + Math.random();
             module.v = {
