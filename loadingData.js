@@ -1,10 +1,14 @@
+import * as YAML from './libraries/yaml/browser/dist/index.js';
+yaml = YAML;
+
 loadData();
 
 async function loadData() {
-    var fileName = 'browser.json';
+    var fileName = 'browser.yaml';
     var response = await fetch(fileName);
     try {
-        var data = await response.json();
+        var payload = await response.text();
+        var data = yaml.parse(payload);
     } catch(error) {
         if(error instanceof SyntaxError) {
             throw new SyntaxError(`${fileName} is not valid JSON.`);

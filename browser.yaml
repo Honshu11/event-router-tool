@@ -72,10 +72,10 @@ events:
     publisher: keyboard
     subscribers:
       - eventHandler
-  keyUp:
-    publisher: keyboard
-    subscribers:
-      - eventHandler
+  # keyUp:
+  #   publisher: keyboard
+  #   subscribers:
+  #     - eventHandler
   callEventHandler:
     publisher: eventHandler
     subscribers:
@@ -133,10 +133,10 @@ events:
     publisher: javascriptEngine
     subscribers:
       - domEngine
-  domUpdate:
-    publisher: javascriptEngine
-    subscribers:
-      - domEngine
+  # domUpdate:
+  #   publisher: javascriptEngine
+  #   subscribers:
+  #     - domEngine
   updateStyle:
     publisher: javascriptEngine
     subscribers:

@@ -30,43 +30,13 @@ function worldToScreenY(y) {
     return y - camera.y;
 }
 
-function calculateModuleForce(module, otherModules) {
-    module.netForce.x = 0;
-    module.netForce.y = 0;
-    otherModules.forEach(function otherModulesLoop(otherModule) {
-        var distanceBetweenModules = distance(module, otherModule);
-
-        if(distanceBetweenModules === 0) {
-            throw new Error('distance between modules is 0.');
-        }
-
-        if(!Number.isFinite(distanceBetweenModules)) {
-            throw new Error(`distanceBetweenModules is infinity, NaN, or the wrong data type. ${distanceBetweenModules}`);
-        }
-
-        var force = repulsiveStrength / (distanceBetweenModules ** 2);
-        
-
-        if(!Number.isFinite(force)) {
-            throw new Error(`force is infinity, NaN, or the wrong data type. ${force}`);
-        }
-
-        //console.log(`${module.name} ${otherModule.name} ${force} force == distanceBetween ${distanceBetweenModules}`);
-        
-        var angleBetweenModules = angleBetween(module, otherModule);
-        //add to modules force total
-        module.netForce.x += force * Math.cos(angleBetweenModules);
-        //console.log(module.netForce.x);
-        module.netForce.y += force * Math.sin(angleBetweenModules);
-        //console.log(module.netForce.y);
-    })
-
+function calculateAttractiveForce(module, otherModules) {
     callForEachSubscription(function calcAttractiveForce(publisher, otherModule) {
-        if(publisher !== module){
+        if(publisher !== module) {
             return;
         }
 
-        if(publisher.x > otherModule.x - 1.2 * moduleCard.width){
+        if(publisher.x > otherModule.x - 1.2 * moduleCard.width) {
             publisher.netForce.y += Math.random() * 10;
             return;
         }
@@ -92,7 +62,51 @@ function calculateModuleForce(module, otherModules) {
         //add to modules force total
         module.netForce.x += force * Math.cos(angleBetweenModules);
         module.netForce.y += force * Math.sin(angleBetweenModules);
-    }, module);
+    }, module);    
+} 
+
+function calculateRepulsiveForce(module, otherModules) {
+    otherModules.forEach(function otherModulesLoop(otherModule) {
+        var distanceBetweenModules = distance(module, otherModule);
+
+        if(distanceBetweenModules === 0) {
+            //throw new Error('distance between modules is 0.');
+            module.x += 1000;
+            otherModule.x -= 1000;
+            distanceBetweenModules = distance(module, otherModule);
+        }
+
+        if(!Number.isFinite(distanceBetweenModules)) {
+            throw new Error(`distanceBetweenModules is infinity, NaN, or the wrong data type. ${distanceBetweenModules}`);
+        }
+
+        var force = repulsiveStrength / (distanceBetweenModules ** 2);
+        
+        if(!Number.isFinite(force)) {
+            throw new Error(`force is infinity, NaN, or the wrong data type. ${force}`);
+        }
+
+        //console.log(`${module.name} ${otherModule.name} ${force} force == distanceBetween ${distanceBetweenModules}`);
+        
+        var angleBetweenModules = angleBetween(module, otherModule);
+        //add to modules force total
+        module.netForce.x += force * Math.cos(angleBetweenModules);
+        //console.log(module.netForce.x);
+        module.netForce.y += force * Math.sin(angleBetweenModules);
+        //console.log(module.netForce.y);
+    })    
+}
+
+function calculateZoneCenteringForce(module, otherModules) {
+    //TODO: 
+}
+
+function calculateModuleForce(module, otherModules) {
+    module.netForce.x = 0;
+    module.netForce.y = 0;
+    calculateRepulsiveForce(module, otherModules);
+    calculateAttractiveForce(module, otherModules);
+    //calculateZoneCenteringForce();
 
     //console.log(module.netForce);
     //TODO: calculate zone attractive force using verticalness.
@@ -140,7 +154,7 @@ function applyModuleForce(module) {
     updateVelocity(module);
     applyMaxVelocity(module);
     updatePosition(module);
-    applyCanvasBoundary(module);
+    //applyCanvasBoundary(module);
 }
 
 function applyCanvasBoundary(module) {
@@ -269,11 +283,11 @@ function drawModule(module, x, y) {
         c.lineTo(screenX + 100 * module.v.x, screenY + 100 * module.v.y - 1);
         c.stroke();
         
-        // c.strokeStyle = '#0F0';
-        // c.beginPath()
-        // c.moveTo(module.x, module.y - 20);
-        // c.lineTo(module.x + 100 * module.netForce.x, module.y + 100 * module.netForce.y - 20);
-        // c.stroke();
+        c.strokeStyle = '#0F0';
+        c.beginPath()
+        c.moveTo(screenX, screenY - 20);
+        c.lineTo(screenX + 100 * module.netForce.x, screenY + 100 * module.netForce.y - 20);
+        c.stroke();
     }
 }
 
@@ -330,7 +344,7 @@ function callForEachSubscription(callback, module) {
             var subscriber = system.modules[subscriberName];
             var publisher = system.modules[event.publisher];
 
-            console.log(`publisher - ${publisher.name}. subscriber -${subscriber.name}`);
+            //console.log(`publisher - ${publisher.name}. subscriber -${subscriber.name}`);
 
             //way to create an optional param.
             // if(module !== null && publisher == module) {
