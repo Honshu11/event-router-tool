@@ -10,3 +10,14 @@ canvas {
     top: 0;
     left: 0;
 }
+
+pre {
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: #ccc8;
+    width: 500px;
+    height: 800px;
+    overflow: scroll;
+    font-size: 175%;
+}

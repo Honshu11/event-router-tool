@@ -3,6 +3,21 @@ yaml = YAML;
 
 loadData();
 
+var pre = document.querySelector('pre');
+
+pre.addEventListener('keyup', function(event){
+    console.log('keyup');
+    try {
+        var data = yaml.parse(pre.innerText);
+    } catch(error) {
+        if(error instanceof SyntaxError) {
+            throw new SyntaxError(`Not valid YAML syntax`);
+        }
+    }
+    createSystem(data);
+});
+
+
 async function loadData() {
     var fileName = 'browser.yaml';
     var response = await fetch(fileName);
@@ -14,7 +29,11 @@ async function loadData() {
             throw new SyntaxError(`${fileName} is not valid JSON.`);
         }
     }
-    
+    createSystem(data);
+    pre.innerText = payload;
+}
+
+async function createSystem(data){
     system = data;
     system.zones = system.modules;
     system.modules = {};
@@ -37,6 +56,7 @@ async function loadData() {
                 x: 0.0,
                 y: 0.0,
             };
+            module.zone = zoneName;
 
             system.modules[moduleName] = module; //"flattening a tree" 
         })

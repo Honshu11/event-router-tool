@@ -1,8 +1,8 @@
 
 document.addEventListener('click', function(event) {
-    console.log(camera);
-    console.log('x: ' + worldToScreenX(event.x));
-    console.log('y: ' + worldToScreenY(event.y));    
+    // console.log(camera);
+    // console.log('x: ' + worldToScreenX(event.x));
+    // console.log('y: ' + worldToScreenY(event.y));    
 });
 
 //camera movement
@@ -10,7 +10,7 @@ document.addEventListener('mousemove', function(event) {
     if(event.buttons == 1) {
         camera.x -= event.movementX;
         camera.y -= event.movementY;
-        console.log(JSON.stringify(event.movementX));
+        //console.log(JSON.stringify(event.movementX));
     }
 })
 
@@ -23,11 +23,11 @@ function requestAnimationFrameSlowMoDebug() {
 }
 
 function worldToScreenX(x) {
-    return x - camera.x;
+    return x * zoom - camera.x;
 }
 
 function worldToScreenY(y) {
-    return y - camera.y;
+    return y * zoom - camera.y;
 }
 
 function calculateAttractiveForce(module, otherModules) {
@@ -97,8 +97,30 @@ function calculateRepulsiveForce(module, otherModules) {
     })    
 }
 
-function calculateZoneCenteringForce(module, otherModules) {
-    //TODO: 
+function calculateZoneCenteringForce(module) {
+    var zone = system.zoneLocations[module.zone];
+    //console.log(zone);
+    var distanceBetweenModules = distance(module, zone);
+    
+    if(distanceBetweenModules === 0) {
+        throw new Error(`distanceBetweenModules is 0. ${module.name} ${zone._name}`);
+    }
+
+    if(!Number.isFinite(distanceBetweenModules)) {
+        throw new Error(`distanceBetweenModules is infinity, NaN, or the wrong data type ${distanceBetweenModules}`);
+    }
+
+    var force = zoneCenteringStrength * (distanceBetweenModules ** 1);
+        //console.log(`force on ${module.name} is ${force}`);
+    
+    if(!Number.isFinite(force)) {
+        throw new Error(`force is infinity, NaN, or the wrong data type ${force}`);
+    }
+
+    var angleBetweenModules = angleBetween(zone, module);
+    //add to modules force total
+    module.netForce.x += force * Math.cos(angleBetweenModules);
+    module.netForce.y += force * Math.sin(angleBetweenModules);
 }
 
 function calculateModuleForce(module, otherModules) {
@@ -106,7 +128,7 @@ function calculateModuleForce(module, otherModules) {
     module.netForce.y = 0;
     calculateRepulsiveForce(module, otherModules);
     calculateAttractiveForce(module, otherModules);
-    //calculateZoneCenteringForce();
+    calculateZoneCenteringForce(module);
 
     //console.log(module.netForce);
     //TODO: calculate zone attractive force using verticalness.
@@ -251,7 +273,7 @@ function applyForces() {
 function tick() {
     c.clearRect(0, 0, width, height);
 
-    if(!pause){
+    if(!pause && system){
         calculateForces();
         applyForces();
     }
@@ -268,9 +290,9 @@ function drawModule(module, x, y) {
     c.strokeStyle = '#000';
     c.fillStyle = '#bbb4';
     c.font = `${moduleCard.headerFontSize}px Ariel`;
-    c.fillRect(screenX, screenY, moduleCard.width, moduleCard.height);
-    c.strokeRect(screenX, screenY, moduleCard.width, moduleCard.height);
-    c.strokeRect(screenX, screenY, moduleCard.width, moduleCard.headerHeight);
+    c.fillRect(screenX, screenY, moduleCard.width * zoom, moduleCard.height * zoom);
+    c.strokeRect(screenX, screenY, moduleCard.width * zoom, moduleCard.height * zoom);
+    c.strokeRect(screenX, screenY, moduleCard.width * zoom, moduleCard.headerHeight * zoom);
     c.fillStyle = '#000';
     c.fillText(module.name, screenX + 20, screenY + 20);
 
@@ -306,18 +328,18 @@ function drawSubscriberArrow(moduleA, moduleB) {
         throw new Error('Module B is undefined. (probably subscriber is not in the module list.)');
     }
 
-    var arrowSize = 15;
+    var arrowSize = 15 * zoom;
     
     c.strokeStyle = '#000';
     c.beginPath();
-    c.moveTo(moduleAScreenX + moduleCard.width, moduleAScreenY + 100);
-    c.lineTo(moduleBScreenX, moduleBScreenY + 100);
-    c.lineTo(moduleBScreenX - arrowSize, moduleBScreenY + 100 - arrowSize);
+    c.moveTo(moduleAScreenX + moduleCard.width * zoom, moduleAScreenY + moduleCard.height * zoom * 0.5);
+    c.lineTo(moduleBScreenX, moduleBScreenY + moduleCard.height * zoom * 0.5);
+    c.lineTo(moduleBScreenX - arrowSize, moduleBScreenY + moduleCard.height * zoom * 0.5 - arrowSize);
     c.stroke();
 
     c.beginPath();
-    c.moveTo(moduleBScreenX, moduleBScreenY + 100);
-    c.lineTo(moduleBScreenX - arrowSize, moduleBScreenY + 100 + arrowSize);
+    c.moveTo(moduleBScreenX, moduleBScreenY + moduleCard.height * zoom * 0.5);
+    c.lineTo(moduleBScreenX - arrowSize, moduleBScreenY + moduleCard.height * zoom * 0.5 + arrowSize);
     c.stroke();    
 }
 
@@ -368,3 +390,4 @@ function callForEachSubscription(callback, module) {
         })
     })
 }
+

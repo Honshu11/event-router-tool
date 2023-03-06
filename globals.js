@@ -1,7 +1,7 @@
 var system;
 
-//var debug = false;
-var debug = true;
+var debug = false;
+//var debug = true;
 var slowMo = true;
 var pause = false;
 var yaml;
@@ -31,6 +31,8 @@ var camera = {
     y: 0,
 }
 
-var repulsiveStrength = 1e5; //1e11;  
+var zoom = 0.35;
+
+var repulsiveStrength = 1e6; //1e11;  
 var attractiveStrength = 1e4; //1e9;
-var zoneCenteringStrength = 100;
+var zoneCenteringStrength = 0.1;
