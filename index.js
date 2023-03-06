@@ -18,7 +18,7 @@ function requestAnimationFrameSlowMoDebug() {
     if(!slowMo){
         requestAnimationFrame(tick);
     } else {
-        setTimeout(tick, 40);
+        setTimeout(tick, 200);
     }
 }
 

@@ -4,9 +4,17 @@ yaml = YAML;
 loadData();
 
 var pre = document.querySelector('pre');
+var keyUpTime = Date.now();
+
 
 pre.addEventListener('keyup', function(event){
     console.log('keyup');
+    if(Date.now() < keyUpTime + 500){
+        return;
+    }
+    keyUpTime = Date.now();
+
+
     try {
         var data = yaml.parse(pre.innerText);
     } catch(error) {
