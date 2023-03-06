@@ -22,7 +22,7 @@ var spacing = 200;
 var bounce = .01;
 
 var maxSpeed = 5;
-var minAcceleration = 0.3;
+var minAcceleration = 7;
 var moduleMass = 1.0;
 var forceConstant = 1000;
 

@@ -129,6 +129,14 @@ function calculateModuleForce(module, otherModules) {
     calculateRepulsiveForce(module, otherModules);
     calculateAttractiveForce(module, otherModules);
     calculateZoneCenteringForce(module);
+    if(module.netForce.x < minAcceleration && module.netForce.x > -minAcceleration){
+        module.netForce.x = 0;
+        module.v.x = 0;
+    }
+    if(module.netForce.y < minAcceleration && module.netForce.y > -minAcceleration){
+        module.netForce.y = 0;
+        module.v.y = 0;
+    }
 
     //console.log(module.netForce);
     //TODO: calculate zone attractive force using verticalness.
